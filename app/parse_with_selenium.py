@@ -35,19 +35,20 @@ def parse(url):
             avg_temp = 0
             day_press = []
             for time_of_day in TimeOfDay:
-                temp = day_card.find_element(By.XPATH, f"article/div[contains(@style, '{time_of_day.value}-temp')]").text
-                press = day_card.find_element(By.XPATH, f"article/div[contains(@style, '{time_of_day.value}-press')]").text
+                tod_key = time_of_day.name
+                temp = day_card.find_element(By.XPATH, f"article/div[contains(@style, '{tod_key}-temp')]").text
+                press = day_card.find_element(By.XPATH, f"article/div[contains(@style, '{tod_key}-press')]").text
 
                 day_press.append(int(press))
 
-                if time_of_day.value != "n":
+                if tod_key != TimeOfDay.n:
                     avg_temp += int(temp[0:len(temp)-1])
 
-                day_block[time_of_day.value] = {
+                day_block[tod_key] = {
                     "temp": temp,
                     "press": press,
-                    "hum": day_card.find_element(By.XPATH, f"article/div[contains(@style, '{time_of_day.value}-hum')]").text,
-                    "weather": day_card.find_element(By.XPATH, f"article/div[contains(@style, '{time_of_day.value}-text')]").text,
+                    "hum": day_card.find_element(By.XPATH, f"article/div[contains(@style, '{tod_key}-hum')]").text,
+                    "weather": day_card.find_element(By.XPATH, f"article/div[contains(@style, '{tod_key}-text')]").text,
                 }
             day_block["avg_temp"] = round(avg_temp / 3.0, 1)
 
@@ -71,10 +72,10 @@ def parse(url):
 
 
 class TimeOfDay(Enum):
-    MORNING = "m"
-    DAY = "d"
-    EVENING = "e"
-    NIGHT = "n"
+    m = "Утро"
+    d = "День"
+    e = "Вечер"
+    n = "Ночь"
 
     def __iter__(self):
-        return iter(list(self.MORNING, self.DAY, self.EVENING, self.NIGHT))
+        return iter(list(self.m, self.d, self.e, self.n))
