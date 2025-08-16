@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
 def parse(url):
+    # TODO: switch to find the installed browser to use
     options = webdriver.ChromeOptions()
     options.add_argument("headless")
     # used to make the window wide, since with the narrow one weather desc is hidden and can't be parsed

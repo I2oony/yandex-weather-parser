@@ -2,7 +2,7 @@ import xlsxwriter
 
 from parse_with_selenium import TimeOfDay
 
-def write_to_excel(forecast, path_to_file):
+def write_to_excel(city, forecast, path_to_file):
     workbook = xlsxwriter.Workbook(path_to_file)
     worksheet = workbook.add_worksheet("Прогноз погоды")
     
@@ -11,7 +11,7 @@ def write_to_excel(forecast, path_to_file):
     formatting_title.set_top(2)
     formatting_title.set_bottom()
 
-    row_num = 0
+    row_num = 2
     col_num = 0
 
     for item in forecast:
@@ -61,6 +61,9 @@ def write_to_excel(forecast, path_to_file):
         row_num += 1
 
     worksheet.autofit()
+
+    worksheet.merge_range(0, 0, 0, 5, city, formatting_title)
+
     workbook.close()
 
     return
