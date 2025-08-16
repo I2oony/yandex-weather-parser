@@ -36,7 +36,7 @@ def write_to_excel(forecast, path_to_file):
             additional_info = ""
 
             if time_of_day == TimeOfDay.m:
-                additional_info = f"Средняя дневная t°:{item['avg_temp']}°"
+                additional_info = f"Средняя дневная t°: {item['avg_temp']}°"
             if time_of_day == TimeOfDay.d:
                 additional_info = f"Магнитное поле: {item['magnetic']}"
             if time_of_day == TimeOfDay.e:
