@@ -122,4 +122,4 @@ if __name__ == "__main__":
     db.save_log(city.display_name, datetime.today(), ResultMessages.SUCCESS.value, "")
     db.close_connection()
 
-    print("Завершение программы...")
+    input("\nНажмите ENTER для выхода.")

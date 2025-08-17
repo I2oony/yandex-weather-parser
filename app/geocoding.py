@@ -1,10 +1,12 @@
 import requests
 
+NOMINATIM_USER_AGENT = "Yandex Weather Parser by I2oony (ppalamar28@gmail.com)"
+
 def get_cities_coordinates(query):
     # custom User-Agent used to fit Nominatim's Usage Policy
     # https://operations.osmfoundation.org/policies/nominatim/
     headers = {
-        "User-Agent": "Yandex Weather Parser by I2oony (ppalamar28@gmail.com)",
+        "User-Agent": NOMINATIM_USER_AGENT,
         "Accept-Language": "ru-RU"
     }
 
