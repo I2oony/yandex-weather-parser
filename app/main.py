@@ -14,7 +14,7 @@ import database
 
 def get_city_from_user():
     city = ""
-    cities = []
+    cities = list()
 
     while True:
         print("Введите город, для которого требуется собрать прогноз погоды:")
@@ -28,10 +28,12 @@ def get_city_from_user():
         print("Найдены следующие города:")
         for i in range(len(cities)):
             print(f"{i}. {cities[i].name} -- {cities[i].display_name}")
-        print("Введите цифру нужного города:")
+        print("Введите цифру нужного города или '9' для выхода из программы.")
         selected_item = input("--> ")
         try:
             selected_item = int(selected_item)
+            if selected_item == 9:
+                return None
             if selected_item >= 0 and selected_item < len(cities):
                 return cities[selected_item]
         except:
@@ -45,7 +47,8 @@ def resolve_program_path(program_name):
 
 
 class ResultMessages(Enum):
-    KEYBOARD_INTERRUPT = "[FAILED] User quit during choosing the city."
+    KEYBOARD_INTERRUPT = "[FAILED] User interrupted the input during choosing the city."
+    EXITED_BY_USER = "[FAILED] User quit during choosing the city."
     BROWSER_NOT_FOUND = "[FAILED] Browser Google Chrome is not intstalled."
     FILE_NOT_SAVED = "[FAILED] Can't save the file."
     FILE_NOT_OPENED = "[FAILED] Can't open the file."
@@ -76,6 +79,9 @@ if __name__ == "__main__":
 
     try:
         city = get_city_from_user()
+        if city == None:
+            print("Завершение программы...")
+            db.save_log("", datetime.today(), ResultMessages.EXITED_BY_USER.value)
     except KeyboardInterrupt:
         print("\nВвод прерван пользователем. Выход из программы...")
         db.save_log("", datetime.today(), ResultMessages.KEYBOARD_INTERRUPT.value, traceback.format_exc())
@@ -92,8 +98,7 @@ if __name__ == "__main__":
         db.save_log(city.display_name, datetime.today(), ResultMessages.BROWSER_NOT_FOUND.value, traceback.format_exc())
         quit()
 
-    current_datetime = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = f"Forecast_{current_datetime}.xlsx"
+    filename = f"Forecast_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.xlsx"
     filepath = f"{homepath}/{filename}"
 
     try:
@@ -115,4 +120,6 @@ if __name__ == "__main__":
         quit()
 
     db.save_log(city.display_name, datetime.today(), ResultMessages.SUCCESS.value, "")
+    db.close_connection()
+
     print("Завершение программы...")

@@ -18,7 +18,7 @@ def get_cities_coordinates(query):
     response = requests.get(url, headers=headers, params=query_params)
     results = response.json()
 
-    list_of_results = []
+    list_of_results = list()
     for item in results:
         list_of_results.append(City(item["name"], 
                                     item["display_name"], 

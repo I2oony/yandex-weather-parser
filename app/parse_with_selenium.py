@@ -12,7 +12,7 @@ def parse(url):
     options.add_argument("--window-size=1920,1024")
     driver = webdriver.Chrome(options=options)
 
-    forecast = []
+    forecast = list()
 
     driver.get(url)
     try:
@@ -24,17 +24,18 @@ def parse(url):
                 "date": day_card.find_element(By.XPATH, "article/h3[contains(@style, 'day-title')]").text
             }
 
-            magnetic = ""
+            magnetic = "Нет данных о магнитном поле"
             additional_info = day_card.find_elements(By.XPATH, "article/div[contains(@class, 'dayDuration')]/div[contains(@class, 'info')]/div")
             for item in additional_info:
                 caption = item.find_element(By.XPATH, "div[contains(@class, 'caption')]").text
                 value = item.find_element(By.XPATH, "div[contains(@class, 'value')]").text
                 if caption == "Магнитное поле":
                     magnetic = value
+                    break
             day_block["magnetic"] = magnetic
             
             avg_temp = 0
-            day_press = []
+            day_press = list()
             for time_of_day in TimeOfDay:
                 tod_key = time_of_day.name
                 temp = day_card.find_element(By.XPATH, f"article/div[contains(@style, '{tod_key}-temp')]").text
@@ -67,6 +68,8 @@ def parse(url):
             forecast.append(day_block)
     except NoSuchElementException as e:
         print(f"Some element was not found: {e.msg}")
+    except ValueError as e:
+        print(f"Error during parsing number.")
 
     driver.quit()
     return forecast

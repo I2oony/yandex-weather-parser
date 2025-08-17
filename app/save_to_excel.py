@@ -29,7 +29,7 @@ def write_to_excel(city, forecast, path_to_file):
         col_num = 0
         row_num += 1
 
-        table_content = []
+        table_content = list()
         for time_of_day in TimeOfDay:
             tod_key = time_of_day.name
 
@@ -65,5 +65,3 @@ def write_to_excel(city, forecast, path_to_file):
     worksheet.merge_range(0, 0, 0, 5, city, formatting_title)
 
     workbook.close()
-
-    return
