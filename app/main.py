@@ -1,13 +1,15 @@
-import json
+from enum import Enum
 from datetime import datetime
 import pathlib
 import subprocess
+import traceback
 
 from selenium.common.exceptions import NoSuchDriverException
 
 import parse_with_selenium
 import save_to_excel
 import geocoding
+import database
 
 
 def get_city_from_user():
@@ -42,6 +44,14 @@ def resolve_program_path(program_name):
     return program_path.as_posix()
 
 
+class ResultMessages(Enum):
+    KEYBOARD_INTERRUPT = "[FAILED] User quit during choosing the city."
+    BROWSER_NOT_FOUND = "[FAILED] Browser Google Chrome is not intstalled."
+    FILE_NOT_SAVED = "[FAILED] Can't save the file."
+    FILE_NOT_OPENED = "[FAILED] Can't open the file."
+    SUCCESS = "[SUCCESS]"
+
+# TODO: migrate logs to smth else? mb function? since there is a lot repeated code in the except statements
 if __name__ == "__main__":
     print("""
           ====================================================================================
@@ -50,9 +60,25 @@ if __name__ == "__main__":
           ====================================================================================
           """)
     try:
+        homepath = resolve_program_path("forecast_parser")
+        db = database.Database(homepath)
+    # TODO: different exceptions for getting path and opening database
+    except:
+        print("\nОшибка при подключении к базе данных логов! Выполнение программы не может быть продолжено!"
+              + "\nПожалуйста, предоставьте ошибку ниже разработчику:")
+        
+        print("[ERROR START]\n"
+              + traceback.format_exc()
+              + "[ERROR END]")
+
+        print("\nВыход из программы...")
+        quit()
+
+    try:
         city = get_city_from_user()
     except KeyboardInterrupt:
-        print("\nВвод прерван пользователь. Выход из программы...")
+        print("\nВвод прерван пользователем. Выход из программы...")
+        db.save_log("", datetime.today(), ResultMessages.KEYBOARD_INTERRUPT.value, traceback.format_exc())
         quit()
     
     print(f"Выбранный город: {city.display_name}")
@@ -63,19 +89,30 @@ if __name__ == "__main__":
         forecast = parse_with_selenium.parse(url)
     except NoSuchDriverException:
         print("\nНе найден подходящий браузер (Google Chrome) для запуска. Выход из программы...")
+        db.save_log(city.display_name, datetime.today(), ResultMessages.BROWSER_NOT_FOUND.value, traceback.format_exc())
         quit()
-
-    homepath = resolve_program_path("forecast_parser")
 
     current_datetime = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"Forecast_{current_datetime}.xlsx"
     filepath = f"{homepath}/{filename}"
 
-    save_to_excel.write_to_excel(city.display_name, forecast, filepath)
+    try:
+        save_to_excel.write_to_excel(city.display_name, forecast, filepath)
+    except:
+        print("\nОшибка при сохранении конечного файла. Выход из программы...")
+        db.save_log(city.display_name, datetime.today(), ResultMessages.FILE_NOT_SAVED.value, traceback.format_exc())
+        quit()
     
     print(f"\nФайл {filename} с прогнозом погоды создан в директории {homepath}")
     print("Открываю файл...")
 
-    subprocess.Popen(["start", pathlib.Path(filepath)], shell=True)
+    try:
+        subprocess.Popen(["start", pathlib.Path(filepath)], shell=True)
+    except:
+        print("\nОшибка при открытии файла с прогнозом погоды. Попробуйте открыть самостоятельно.\
+               \nВыход из программы...")
+        db.save_log(city.display_name, datetime.today, ResultMessages.FILE_NOT_SAVED.value, traceback.format_exc())
+        quit()
 
+    db.save_log(city.display_name, datetime.today(), ResultMessages.SUCCESS.value, "")
     print("Завершение программы...")
