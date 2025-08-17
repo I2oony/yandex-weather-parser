@@ -34,7 +34,13 @@ def get_city_from_user():
                 return cities[selected_item]
         except:
             print("Ошибка при выборе! Попробуйте снова.")
-        
+
+def resolve_program_path(program_name):
+    home_path = pathlib.Path.home().as_posix()
+    program_path = pathlib.Path(f"{home_path}/{program_name}")
+    program_path.mkdir(exist_ok=True)
+    return program_path.as_posix()
+
 
 if __name__ == "__main__":
     print("""
@@ -59,15 +65,15 @@ if __name__ == "__main__":
         print("\nНе найден подходящий браузер (Google Chrome) для запуска. Выход из программы...")
         quit()
 
-    userpath = pathlib.Path.home().as_posix()
+    homepath = resolve_program_path("forecast_parser")
 
     current_datetime = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"Forecast_{current_datetime}.xlsx"
-    filepath = f"{userpath}/{filename}"
+    filepath = f"{homepath}/{filename}"
 
     save_to_excel.write_to_excel(city.display_name, forecast, filepath)
     
-    print(f"Файл {filename} с прогнозом погоды создан в директории {userpath}")
+    print(f"\nФайл {filename} с прогнозом погоды создан в директории {homepath}")
     print("Открываю файл...")
 
     subprocess.Popen(["start", pathlib.Path(filepath)], shell=True)
